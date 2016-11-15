@@ -1,0 +1,82 @@
+@function rgba-color($color, $opacity: 1) {
+    $red: red($color);
+    $green: green($color);
+    $blue: blue($color);
+    @return rgba($red, $green, $blue, $opacity);
+}
+
+
+
+/// Power function
+/// @param {Number} $x
+/// @param {Number} $n
+/// @return {Number}
+@function pow($x, $n) {
+    $ret: 1;
+
+    @if $n >= 0 {
+        @for $i from 1 through $n {
+            $ret: $ret * $x;
+        }
+    }
+    @else {
+        @for $i from $n to 0 {
+            $ret: $ret / $x;
+        }
+    }
+
+    @return $ret;
+}
+
+/// toFixed() function in Sass
+/// @param {Number} $float - number to format
+/// @param {Number} $digits (2) - number of digits to leave
+/// @return {Number}
+@function to-fixed($float, $digits: 2) {
+    $sass-precision: 5;
+
+    @if $digits > $sass-precision {
+        @warn "Sass sets default precision to #{$sass-precision} digits, and there is no way to change that for now." + "The returned number will have #{$sass-precision} digits, even if you asked for `#{$digits}`." + "See https://github.com/sass/sass/issues/1122 for further informations.";
+    }
+
+    $pow: pow(10, $digits);
+    @return round($float * $pow) / $pow;
+}
+
+/// Alias function to match JavaScript name
+/// @alias to-fixed
+@function toFixed($args...) {
+    @return to-fixed($args);
+}
+
+/// Alias function to allow the use of precision()
+/// @alias to-fixed
+@function precision($args...) {
+    @return to-fixed($args);
+}
+
+
+@function calculateHeight($font) {
+    /// Normally when the font changes, the height of its container changes with 66,66%
+    /// 88.88% so the height of the container changes with smaller amount of pixels
+    @return to-fixed($font * 100 / 88.88, 1);
+}
+
+@function calculateLineHeight($font) {
+    @return to-fixed($font * 83.3 / 100, 1);
+}
+
+/*The body font-size is set to 14px
+The font-size of the h3 tag is 40px
+The width of the containing div is 230px*/
+
+@function minifyFontSize($width, $h3-font-size) {
+    $textPercentage: $h3-font-size/$width; /* 40/230 */ //0.09
+    $textRatio: $width * $textPercentage;
+    $textEms: $textRatio / 14; //the body font -return ems
+    @return $h3-font-size - to-fixed($textEms * 100 / $h3-font-size, 1);
+}
+
+@function pxtopercent($target, $parent: 100) {
+    @return percentage($target / $parent);
+}
